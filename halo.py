@@ -75,7 +75,7 @@ class HALO():
         state, results = self.check()
         fathers = [0]
         self.k += 1
-        if self.verbose == True:
+        if self.verbose == 1:
             print('Starting Iteration No: ', self.k, 'Best Objective Function Value ', min(self.F_hist))
         if state == 'continue':
             pass
@@ -495,7 +495,7 @@ class HALO():
                                         self.tree[old_neighbor_ir][current_level_ir][current_neighbor_ir] = (dim_old_neighbor_ir, new_sign, delta)
                                         
             self.k += 1
-            if self.verbose == True:
+            if self.verbose == 1:
                 print('Starting Iteration No: ', self.k, 'Best Objective Function Value ', min(self.F_hist))
         state, results = self.check()
         return results
@@ -559,7 +559,7 @@ class HALO():
         if self.compute_neighbors(index_x0) == True:
             self.count_local += 1
             x0 = self.X[index_x0]
-            if self.verbose == True:
+            if self.verbose == 1:
                 print('Starting Local Optimization Routine')
                 print('Local Optimization Method: ', self.local_optimizer, 'Starting Point x0: ', x0)
             max_local_feval = self.max_feval - self.feval
