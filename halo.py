@@ -5,7 +5,6 @@ Created on Fri Jun  4 18:58:15 2021
 
 @author: danny
 """
-
 import numpy as np
 import math
 from collections import defaultdict
@@ -42,24 +41,26 @@ class HALO():
         self.X_hist = []
     
     def minimize(self):
+        list_local_optimizers = ['L-BFGS-B', 'Nelder-Mead', 'TNC', 'Powell']
+        if self.local_optimizer not in list_local_optimizers:
+            raise ValueError(
+                "Unrecognized local optimizer. Available local optimizers are: 'L-BFGS-B', 'Nelder-Mead', 'TNC' and 'Powell'.")
         global v0, n_rects, N
         N = len(self.bounds)
         current_sampled = [[]]
-        x_L, x_U = self.bounds[:, 0], self.bounds[:, 1]            
+        if type(self.bounds) == list:
+            self.bounds = np.asarray(self.bounds)
+        x_L, x_U = self.bounds[:, 0], self.bounds[:, 1]       
         n_rects = 1 # number of rectangles
         self.levels.append(0)
         self.C.append(np.ones(N) / 2.)
-        if self.verbose == True:
-            print('Initialization')
-            print('Starting Iteration No: ', self.k)
         x_c = x_L + self.C[0] * (x_U - x_L)
         self.feval += 1
-        if self.verbose == 1:
-            print('Iteration No: ', self.k, 'Function Evaluation No: ', self.feval, 
-                  'Performing Function Evaluation at: ', x_c)
         f_c = self.f(x_c)
         if self.verbose == 1:
-            print('Objective Function Value: ', f_c, '\n')
+            print('Iteration No.: ', self.k, '\n', 'Function Evaluation No.: ', self.feval, '\n',
+                  'Performing Function Evaluation at: ', x_c, '\n', 
+                  'Objective Function Value: ', f_c, '\n', sep="")
         self.X.append(x_c)
         self.neighbors[0][0] = [0]
         s0 = [0.5] * N
@@ -76,30 +77,23 @@ class HALO():
         fathers = [0]
         self.k += 1
         if self.verbose == 1:
-            print('Starting Iteration No: ', self.k, 'Best Objective Function Value ', min(self.F_hist))
+            print('Starting Iteration No.: ', self.k, 'Best Objective Function Value: ', min(self.F_hist))
         if state == 'continue':
             pass
         else:
             return results
-        
         while self.k < self.max_iter and self.feval <= self.max_feval:
-            
             if self.k > 1:
                 h = np.linalg.norm(self.G, axis=1)
                 L_glob = max(h)
                 l = self.compute_lipschitz(h, L_glob)
                 I_star = self.selection(l, h)
-            
             for i_star in I_star: 
-                
                 s_max = max(self.S[i_star]) 
                 P = np.where(np.asarray(self.S[i_star]) == s_max)[0] 
-              
                 delta = 2. * s_max / 3.
-                
                 T = np.ones(N)*float("inf")
                 G_new = []
-
                 if len(P) == N: 
                     self.levels[i_star] += 1
                     level = self.levels[i_star]
@@ -109,35 +103,28 @@ class HALO():
                     level = self.levels[i_star]
                 cn = []
                 for i, p in enumerate(P): 
-                    
                     e_p = np.zeros(N)
                     e_p[p] = 1.
-                    
                     g_p1 = [0.]*N
-                    
                     C_p1 = self.C[i_star] + delta * e_p
                     x_p1 = x_L + C_p1 * (x_U - x_L)
                     self.feval += 1
-                    if self.verbose == 1:
-                        print('Iteration No: ', self.k, 'Function Evaluation No: ', self.feval, 
-                              'Performing Function Evaluation at: ', x_p1)
                     f_p1 = self.f(x_p1)
                     if self.verbose == 1:
-                        print('Objective Function Value: ', f_p1, '\n')
+                        print('Iteration No: ', self.k, '\n', 'Function Evaluation No.: ', self.feval, '\n',
+                              'Performing Function Evaluation at: ', x_p1, '\n', 
+                              'Objective Function Value: ', f_p1, '\n', sep="")
                     state, results = self.check()
                     if state == 'continue':
                         pass
                     else:
                         return results
-                    
                     self.C.append(C_p1)
                     self.F.append(f_p1)
                     self.F_hist.append(f_p1)
                     self.X.append(x_p1)
                     self.X_hist.append(x_p1)
                     self.levels.append(level)
-                    
-                    
                     j = len(self.X)-1
                     cn.append(j)
                     current_sampled.append([i_star])
@@ -146,40 +133,31 @@ class HALO():
                     self.neighbors[i_star][level].append(j)
                     self.neighbors[j][level] = []
                     self.neighbors[j][level].append(i_star)
-                    
                     self.tree[i_star][level][j] = child_info
                     self.tree[j][level] = {i_star:father_info}
                     fathers.append(i_star)
-                    
                     g_p1[p] = abs(f_p1 - self.F[i_star]) / (delta + 1e-8)
                     G_new.append(g_p1)
-                    
-
-                    
                     g_p2 = [0.]*N
                     C_p2 = self.C[i_star] - delta * e_p
                     x_p2 = x_L + C_p2 * (x_U - x_L)
                     self.feval += 1
-                    if self.verbose == 1:
-                        print('Iteration No: ', self.k, 'Function Evaluation No: ', self.feval, 
-                              'Performing Function Evaluation at: ', x_p2)
                     f_p2 = self.f(x_p2)
                     if self.verbose == 1:
-                        print('Objective Function Value: ', f_p2, '\n')
-                    
+                        print('Iteration No: ', self.k, '\n', 'Function Evaluation No.: ', self.feval, '\n',
+                              'Performing Function Evaluation at: ', x_p2, '\n', 
+                              'Objective Function Value: ', f_p2, '\n', sep="")
                     state, results = self.check()
                     if state == 'continue':
                         pass
                     else:
                         return results
-                    
                     self.levels.append(level)
                     self.C.append(C_p2)
                     self.F.append(f_p2)
                     self.F_hist.append(f_p2)
                     self.X.append(x_p2)
                     self.X_hist.append(x_p2)
-                    
                     j = len(self.X)-1
                     cn.append(j)
                     current_sampled.append([i_star])
@@ -191,45 +169,34 @@ class HALO():
                     self.tree[i_star][level][j] = child_info
                     self.tree[j][level] = {i_star:father_info}
                     fathers.append(i_star)
-                    
                     g_p2[p] = abs(self.F[i_star] - f_p2) / (delta + 1e-8)
                     G_new.append(g_p2)
                     self.G[i_star][p] = abs(f_p1 - f_p2) / (2 * delta + 1e-8)
-
-                    T[i] = min(f_p1, f_p2)
-                    
+                    T[i] = min(f_p1, f_p2)    
                 current_sampled[i_star] = cn
                 for g_new in G_new:
                     indices_zeros_g_new = np.where(np.array(g_new)==0.)[0]
                     for index_zero in indices_zeros_g_new:
                         g_new[index_zero] = self.G[i_star][index_zero]
                     self.G.append(g_new)
-                
                 U = np.argsort(T)[:len(P)]
                 diz_d = {}
                 diz_l = {}
                 for u in U:
-
                     m = P[u]
-
                     self.S[i_star][m] = delta / 2.
                     l1, l2 = list(self.S[i_star]), list(self.S[i_star])
-        
                     dist_vert = math.sqrt(sum([elem**2 for elem in self.S[i_star]]))
-
                     self.v[i_star] = dist_vert
                     diz_l[u] = [l1]
                     diz_l[u].append(l2)
-                    
                     diz_d[u] = [dist_vert]
-                    diz_d[u].append(dist_vert)
-                    
+                    diz_d[u].append(dist_vert)    
                 for i in range(len(P)):# reordering 
                     for ll in diz_l[i]:
                         self.S.append(ll)
                     for dd in diz_d[i]:
                         self.v.append(dd)
-                
                 n_rects = n_rects + 2 * len(P)
                 
             # In this part of the code, I made the tentative to compute the neighbors along the coordinate axis of each point 
@@ -237,7 +204,7 @@ class HALO():
             # finite difference is adaptevely updated not only with respect to the selected partitions (and the points sampled inside them)
             # but also to all the other points.
             # The code seems working but in case you wanna double check you can can uncomment those lines where is written 'for debugging'
-            # you can also analyse the dictionary 'tree' and 'neighbors' to understand if the points are located in a correct way.
+            # you can also analyse the dictionary 'tree' and 'neighbors' to understand if the neighbors are located correctly.
             
             for ir in I_star:
                 if ir == 0 and self.k == 1:
@@ -496,12 +463,13 @@ class HALO():
                                         
             self.k += 1
             if self.verbose == 1:
-                print('Starting Iteration No: ', self.k, 'Best Objective Function Value ', min(self.F_hist))
+                print('Starting Iteration No.: ', self.k,'\n', 
+                      'Best Objective Function Value ', min(self.F_hist), sep="")
         state, results = self.check()
         return results
     
     def check(self):
-        if self.feval >= self.max_feval or self.k > self.max_iter:
+        if self.feval >= self.max_feval or self.k >= self.max_iter:
             dict_results = {}
             dict_results['F_history'] = self.F_hist
             dict_results['X_history'] = self.X_hist
@@ -524,7 +492,6 @@ class HALO():
         l = alpha_vector * np.array([L_glob] * len(self.v)) + h * (1 - alpha_vector)
         return l
         
-   
     def init_selection(self): 
         I_star = [] 
         v_max = max(self.v)
@@ -560,8 +527,9 @@ class HALO():
             self.count_local += 1
             x0 = self.X[index_x0]
             if self.verbose == 1:
-                print('Starting Local Optimization Routine')
-                print('Local Optimization Method: ', self.local_optimizer, 'Starting Point x0: ', x0)
+                print('Starting Local Optimization Routine', '\n', 
+                      'Local Optimization Method: ', self.local_optimizer, '\n', 
+                      'Starting Point x0: ', x0, sep="")
             max_local_feval = self.max_feval - self.feval
             # if self.local_optimizer == 'SDBOX':
             #     x0 = list(x0)
@@ -576,65 +544,25 @@ class HALO():
             #     self.F_hist.append(f_min_local)
             #     self.X_hist.append(x_min_local)
 
-            if self.local_optimizer == 'Powell':
-                res = optimize.minimize(self.f, x0, args=(), method='Powell', 
-                                bounds=self.bounds, tol=None,#callback=store, 
-                                options={'xtol': 0.00001, 'ftol': 0.00001, 
-                                        'maxiter': None, 'maxfev': max_local_feval, 
-                                        'disp': False, 'direc': None, 'return_all': True})
-                f_min_local = res.fun
-                n_fev_local = res.nfev
-                x_min_local = res.x
-                self.feval = self.feval + n_fev_local
-                self.F_hist = self.F_hist + [float('+inf')] * (n_fev_local - 1) + [f_min_local]
-                self.X_hist = self.X_hist + [float('+inf')] * (n_fev_local - 1) + [x_min_local]
-                            
-            if self.local_optimizer == 'Nelder-Mead':
-                res = optimize.minimize(self.f, x0, args=(), method='Nelder-Mead', 
-                                bounds=self.bounds, tol=None, #callback=store, 
-                                options={'xtol': 0.00001, 'ftol': 0.00001, 
-                                        'maxiter': None, 'maxfev': max_local_feval, 
-                                        'disp': False, 'return_all': True})
-                f_min_local = res.fun
-                n_fev_local = res.nfev
-                x_min_local = res.x
-                self.feval = self.feval + n_fev_local
-                self.F_hist = self.F_hist + [float('+inf')] * (n_fev_local - 1) + [f_min_local]
-                self.X_hist = self.X_hist + [float('+inf')] * (n_fev_local - 1) + [x_min_local]
-            
-            if self.local_optimizer == 'BFGS':
-                res = optimize.minimize(self.f, x0, args=(), method='L-BFGS-B', jac=None, 
-                          bounds=self.bounds, tol=None,# callback=store, 
-                          options={'disp': False, 'maxcor': 10, 
-                                  'ftol': 1e-10, 
-                                  'gtol': 1e-8, 
-                                  'maxfun': max_local_feval, 'maxiter': 15000, 
-                                  'iprint': - 1, 'maxls': 20, 
-                                  'finite_diff_rel_step': None})
-                f_min_local = res.fun
-                n_fev_local = res.nfev
-                x_min_local = res.x
-                self.feval = self.feval + n_fev_local
-                self.F_hist = self.F_hist + [float('+inf')] * (n_fev_local - 1) + [f_min_local]
-                self.X_hist = self.X_hist + [float('+inf')] * (n_fev_local - 1) + [x_min_local]
-            
-            if self.local_optimizer == 'TNC':
-                res = optimize.minimize(self.f, x0, args=(), method='TNC', jac=None, 
-                          bounds=self.bounds, tol=None, #callback=store, 
-                          options={'disp': False, 
-                                  'ftol': 1e-10, 
-                                  'gtol': 1e-8,  
-                                  'maxfun': max_local_feval, 'maxiter': 15000, 
-                                  'finite_diff_rel_step': None})
-                f_min_local = res.fun
-                n_fev_local = res.nfev
-                x_min_local = res.x
-                self.feval = self.feval + n_fev_local
-                self.F_hist = self.F_hist + [float('+inf')] * (n_fev_local - 1) + [f_min_local]
-                self.X_hist = self.X_hist + [float('+inf')] * (n_fev_local - 1) + [x_min_local]
+            res = optimize.minimize(self.f, x0, method=self.local_optimizer,
+                      bounds=self.bounds, options={'maxfun': max_local_feval})
+            f_min_local = res.fun
+            n_fev_local = res.nfev
+            x_min_local = res.x
+            self.feval = self.feval + n_fev_local
+            self.F_hist = self.F_hist + [float('+inf')] * (n_fev_local - 1) + [f_min_local]
+            self.X_hist = self.X_hist + [float('+inf')] * (n_fev_local - 1) + [x_min_local]
+            state, results = self.check()
+            if state == 'continue':
+                pass
+            else:
+                return results
             if self.verbose == 1:
-                print('Local Optimization Routine Terminated')
-                print('Objective Function Value ', f_min_local, 'Functions Evaluations Performed ', n_fev_local)
+                print('Local Optimization Routine Terminated', '\n', 
+                      'Objective Function Value: ', f_min_local, '\n', 
+                      'No. Functions Evaluations Performed by the local optimizer: ', 
+                      n_fev_local, '\n',
+                      sep="")
         else:
             return None
     
