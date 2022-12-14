@@ -10,7 +10,7 @@ If you use this algorithm for your research please cite the following work:
 author = {D'Agostino, Danny},
 doi = {https://doi.org/10.48550/arXiv.2211.04129},
 journal = {ArXiv},
-title = {{An Efficient Global Optimization Algorithm with Adaptive Estimates of the Local Lipschitz Constant}},
+title = {{An Efficient Global Optimization Algorithm with Adaptive Estimates of the Local Lipschitz Constants}},
 url = {https://arxiv.org/abs/2211.04129},
 year = {2022}
 }
