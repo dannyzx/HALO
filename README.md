@@ -1,6 +1,7 @@
-# Hybrid Adaptive Lipschitzian Optimization (HALO)
+# HALO
 HALO is a derivative-free deterministic global optimization algorithm designed for solving for black-box problems.<br />
-You can find the algorithm description inside the preprint at the following [link](https://arxiv.org/abs/2211.04129). 
+You can find the algorithm description inside the preprint at the following [link](https://arxiv.org/abs/2211.04129).<br />
+HALO stands for Hybrid Adaptive Lipschitzian Optimization.
 ## How to cite
 If you use this algorithm for your research please cite the following work:
 
