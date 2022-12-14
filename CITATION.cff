@@ -1,4 +1,5 @@
 preferred-citation:
+  message: "If you use this algorithm for your research please cite the following work:"
   type: article
   authors:
   - family-names: "D'Agostino"
