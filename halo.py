@@ -41,16 +41,21 @@ class HALO():
         self.X_hist = []
     
     def minimize(self):
+        if self.beta > 1e-2 or self.beta < 1e-4:
+            raise ValueError(
+                "The parameter beta should be less than or equal to 1e-2 or greater than equal to 1e-4.")
         list_local_optimizers = ['L-BFGS-B', 'Nelder-Mead', 'TNC', 'Powell']
         if self.local_optimizer not in list_local_optimizers:
             raise ValueError(
                 "Unrecognized local optimizer. Available local optimizers are: 'L-BFGS-B', 'Nelder-Mead', 'TNC' and 'Powell'.")
         global v0, n_rects, N
-        N = len(self.bounds)
-        current_sampled = [[]]
         if type(self.bounds) == list:
             self.bounds = np.asarray(self.bounds)
-        x_L, x_U = self.bounds[:, 0], self.bounds[:, 1]       
+        x_L, x_U = self.bounds[:, 0], self.bounds[:, 1]  
+        if (self.bounds[:, 0] > self.bounds[:, 1]).any():
+            raise ValueError("One of the lower bounds is greater than an upper bound.")
+        N = len(self.bounds)
+        current_sampled = [[]]     
         n_rects = 1 # number of rectangles
         self.levels.append(0)
         self.C.append(np.ones(N) / 2.)
@@ -82,7 +87,7 @@ class HALO():
             pass
         else:
             return results
-        while self.k < self.max_iter and self.feval <= self.max_feval:
+        while self.k <= self.max_iter and self.feval <= self.max_feval:
             if self.k > 1:
                 h = np.linalg.norm(self.G, axis=1)
                 L_glob = max(h)
@@ -180,23 +185,23 @@ class HALO():
                         g_new[index_zero] = self.G[i_star][index_zero]
                     self.G.append(g_new)
                 U = np.argsort(T)[:len(P)]
-                diz_d = {}
-                diz_l = {}
+                dict_dv = {}
+                dict_l = {}
                 for u in U:
                     m = P[u]
                     self.S[i_star][m] = delta / 2.
-                    l1, l2 = list(self.S[i_star]), list(self.S[i_star])
+                    s1, s2 = list(self.S[i_star]), list(self.S[i_star])
                     dist_vert = math.sqrt(sum([elem**2 for elem in self.S[i_star]]))
                     self.v[i_star] = dist_vert
-                    diz_l[u] = [l1]
-                    diz_l[u].append(l2)
-                    diz_d[u] = [dist_vert]
-                    diz_d[u].append(dist_vert)    
+                    dict_l[u] = [s1]
+                    dict_l[u].append(s2)
+                    dict_dv[u] = [dist_vert]
+                    dict_dv[u].append(dist_vert)    
                 for i in range(len(P)):# reordering 
-                    for ll in diz_l[i]:
-                        self.S.append(ll)
-                    for dd in diz_d[i]:
-                        self.v.append(dd)
+                    for ss in dict_l[i]:
+                        self.S.append(ss)
+                    for ddv in dict_dv[i]:
+                        self.v.append(ddv)
                 n_rects = n_rects + 2 * len(P)
                 
             # In this part of the code, I made the tentative to compute the neighbors along the coordinate axis of each point 
@@ -473,15 +478,21 @@ class HALO():
             dict_results = {}
             dict_results['F_history'] = self.F_hist
             dict_results['X_history'] = self.X_hist
-            dict_results['F'] = self.F
-            dict_results['X'] = self.X
-            dict_results['C'] = self.C
+            dict_results['F_history_global'] = self.F
+            dict_results['X_history_global'] = self.X
+            dict_results['C_history_global'] = self.C
             dict_results['X_history_local'] = self.X_local_hist
-            dict_results['Count_local'] = self.count_local
-            dict_results['Gradients'] = self.G
-            dict_results['Sides'] = self.S
-            dict_results['Tree'] = self.tree
-            dict_results['Neighbors'] = self.neighbors
+            dict_results['count_local'] = self.count_local
+            dict_results['gradients'] = self.G
+            dict_results['sides'] = self.S
+            dict_results['tree'] = self.tree
+            dict_results['neighbors'] = self.neighbors
+            best_feval = np.argmin(np.asarray(self.F_hist))
+            dict_results['best_feval'] = best_feval
+            best_f = self.F_hist[best_feval]
+            dict_results['best_f'] = best_f
+            best_x = self.X_hist[best_feval]
+            dict_results['best_x'] = best_x
             print('Global Optimization Procedure Completed')
             return ('Terminate', dict_results)
         else:
