@@ -36,10 +36,11 @@ verbose = 1  # this controls the verbosity level, fixed to 0 no output of the op
 
 halo = HALO(fun, bounds, max_feval, max_iter, beta, local_optimizer, verbose)
 results = halo.minimize()
-# results is a dictionary where each key value pair contains a particular information about the optimization
-# process carried out by HALO. For example, with the keys 'best_x', 'best_f' and 'best_feval' we can access 
-# the best decision variable, its function value and the number of function evaluations when it has been  
-# obtained
+# results is a dictionary where each key value pair contains a particular information 
+# about the optimization process carried out by HALO. 
+# For example, with the keys 'best_x', 'best_f' and 'best_feval' we can access 
+# the best decision variable, its function value, and the number 
+# of function evaluations when it has been obtained.
 best_x, best_f, best_feval = results['best_x'],  results['best_f'],  results['best_feval']
    ```
 
