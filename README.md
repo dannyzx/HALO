@@ -13,7 +13,7 @@ Clone the repo:
 from halo import HALO
 import math
 
-bounds = [[-5., -10.], [0., 15.]] # bounds is a list or numpy array where in the
+bounds = [[-5., 10.], [0., 15.]] # bounds is a list or numpy array where in the
 # first column there are the lower bounds
 # and in the second column the upper bounds
 # e.g. [[x_min., x_max], [y_min, y_max]]
