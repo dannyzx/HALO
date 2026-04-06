@@ -1,12 +1,12 @@
 preferred-citation:
-  message: "If you use this algorithm for your research please cite the following work:"
+  message: "If you use this algorithm please cite the following work:"
   type: article
   authors:
   - family-names: "D'Agostino"
     given-names: "Danny"
     orcid: "https://orcid.org/0000-0003-0028-4720"
-  doi: "https://doi.org/10.48550/arXiv.2211.04129"
-  journal: "ArXiv"
+  doi: "10.1007/s10898-025-01555-9"
+  journal: "Journal of Global Optimization"
   title: "An Efficient Global Optimization Algorithm with Adaptive Estimates of the Local Lipschitz Constants"
-  year: 2022
-  url: "https://arxiv.org/abs/2211.04129"
+  year: 2026
+  url: "https://link.springer.com/article/10.1007/s10898-025-01555-9"
