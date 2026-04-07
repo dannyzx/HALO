@@ -118,6 +118,10 @@ A final normalization step is then applied so that the variable importance vecto
 
 This provides an interpretable summary of the directions in which the objective function has shown the highest sensitivity during the optimization process. As a result, HALO is not only a global optimization method, but also a tool that can help identify which variables matter most in the problem under study.
 
+## Example 1D function
+
+![Example 1D function](assets/example_1d_function.gif)
+
 ## Installation
 
 Clone the repository:
