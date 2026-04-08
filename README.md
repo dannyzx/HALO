@@ -202,8 +202,7 @@ Below is a minimal example showing how to define the Branin function and run HAL
 
 ```python
 import numpy as np
-from halo import HALO   # adjust the import to your project structure if needed
-
+from halo import HALO  
 
 def branin(x):
     x = np.asarray(x, dtype=float)
