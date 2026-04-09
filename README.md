@@ -102,7 +102,7 @@ In HALO, local optimization is used as a refinement near promising centroids rat
 
 ## Variable importance and interpretability
 
-At the end of the search, HALO can rank the variables according to the information collected in the matrix $G$, which stores the approximate gradients $\widetilde{\nabla} f(x_{i_k})$.
+At the end of the search, we can rank the variables using the approximate gradients $\widetilde{\nabla} f(x_{i_k})$.
 
 The variable importance is computed as
 
