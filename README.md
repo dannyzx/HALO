@@ -202,7 +202,8 @@ Below is a minimal example showing how to define the Branin function and run HAL
 
 ```python
 import numpy as np
-from halo import HALO  
+from halo import HALO
+
 
 def branin(x):
     x = np.asarray(x, dtype=float)
@@ -216,6 +217,13 @@ def branin(x):
     t = 1.0 / (8.0 * np.pi)
 
     return a * (x2 - b * x1**2 + c * x1 - r)**2 + s * (1.0 - t) * np.cos(x1) + s
+
+
+def compute_variable_importance(gradients):
+    G = np.asarray(gradients, dtype=float)
+    variable_importance = G.mean(axis=0)
+    variable_importance = variable_importance / variable_importance.sum()
+    return variable_importance
 
 
 bounds = np.array([
@@ -235,9 +243,12 @@ solver = HALO(
 
 result = solver.minimize()
 
-print(result)
-```
+variable_importance = compute_variable_importance(result["gradients"])
 
+print("Best x:", result["best_x"])
+print("Best f:", result["best_f"])
+print("Variable importance:", variable_importance)
+```
 ## Citation
 
 If you use HALO in your work, please cite:
